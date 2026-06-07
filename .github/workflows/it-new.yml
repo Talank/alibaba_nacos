@@ -6,14 +6,21 @@ name: Integration Test
 on:
   pull_request:
     branches: [ develop ]
-
+  push:
+  workflow_dispatch:
 permissions:
   contents: read
 
 jobs:
   integration-test:
     name: OpenAPI, Java SDK and Maintainer SDK Integration Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,6 +36,7 @@ jobs:
         run: mvn clean install -Prelease-nacos -DskipTests=true
 
       - name: Start Server Without Auth
+        shell: bash
         run: |
           echo "Configuring application.properties..."
           PROP_FILE=$(ls distribution/target/nacos-server-*/nacos/conf/application.properties)
@@ -41,12 +49,17 @@ jobs:
           sed 's|nacos.core.auth.console.enabled=.*|nacos.core.auth.console.enabled=false|' "$PROP_FILE" > "${PROP_FILE}.tmp" && mv "${PROP_FILE}.tmp" "$PROP_FILE"
 
           echo "Starting server..."
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            pwd() { command pwd -W 2>/dev/null || command pwd; }
+            export -f pwd
+          fi
           bash distribution/target/nacos-server-*/nacos/bin/startup.sh -m standalone
 
       - name: Wait for Server Startup
+        shell: bash 
         run: |
           echo "Waiting for server to launch on port 8080..."
-          if ! timeout 60s bash -c 'until curl -s localhost:8080 > /dev/null; do sleep 2; done'; then
+          if ! bash -c 'for i in {1..30}; do curl -s localhost:8080 > /dev/null && exit 0; sleep 2; done; exit 1'; then
             echo "Server failed to start"
             LOG_DIR=$(ls -d distribution/target/nacos-server-*/nacos/logs 2>/dev/null | head -n 1 || true)
             if [ -n "$LOG_DIR" ]; then
