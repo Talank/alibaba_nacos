@@ -75,9 +75,8 @@ jobs:
           echo "Server is up"
 
       - name: Run IT Tests
-        run: |
-          cd test
-          mvn clean verify -Pintegration-test
+        working-directory: test
+        run: mvn clean verify -Pintegration-test
 
       - name: Run Java SDK IT Tests
         run: mvn -pl test/java-sdk-test clean verify -Pjava-sdk-integration-test -DskipTests=false
