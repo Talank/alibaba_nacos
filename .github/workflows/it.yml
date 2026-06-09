@@ -4,10 +4,7 @@
 name: "Integration Test For 2.X"
 
 on:
-  push:
-    branches: [ v2.x-develop ]
-  pull_request:
-    branches: [ v2.x-develop ]
+  workflow_dispatch:
 
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -38,11 +35,15 @@ jobs:
       - name: "Print maven version"
         run: mvn -version
       - name: "Test Config"
-        run: mvn clean package -Pcit-test -e -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean package -Pcit-test -e 
+          -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Clean Env"
-        run: mvn clean -Premove-test-data -e -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean -Premove-test-data -e 
+          -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Test Naming"
-        run: mvn clean package -Pnit-test -e -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean package -Pnit-test -e 
+          -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Clean Env"
-        run: mvn clean -Premove-test-data -e -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean -Premove-test-data -e 
+          -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
