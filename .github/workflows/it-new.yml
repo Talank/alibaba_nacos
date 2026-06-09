@@ -4,8 +4,7 @@
 name: Integration Test
 
 on:
-  pull_request:
-    branches: [ develop ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -84,3 +83,5 @@ jobs:
 
       - name: Run Maintainer SDK IT Tests
         run: mvn -pl test/maintainer-sdk-test clean verify -Pmaintainer-sdk-integration-test -DskipTests=false
+    strategy:
+      fail-fast: false
