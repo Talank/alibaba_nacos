@@ -28,6 +28,7 @@ jobs:
         run: mvn clean install -Prelease-nacos -DskipTests=true
 
       - name: Start Server Without Auth
+        shell: bash
         run: |
           echo "Configuring application.properties..."
           PROP_FILE=$(ls distribution/target/nacos-server-*/nacos/conf/application.properties)
@@ -40,9 +41,14 @@ jobs:
           sed 's|nacos.core.auth.console.enabled=.*|nacos.core.auth.console.enabled=false|' "$PROP_FILE" > "${PROP_FILE}.tmp" && mv "${PROP_FILE}.tmp" "$PROP_FILE"
 
           echo "Starting server..."
-          bash distribution/target/nacos-server-*/nacos/bin/startup.sh -m standalone
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cmd /c "$(ls distribution/target/nacos-server-*/nacos/bin/startup.cmd | head -n1)" -m standalone
+          else
+            bash distribution/target/nacos-server-*/nacos/bin/startup.sh -m standalone
+          fi
 
       - name: Wait for Server Startup
+        shell: bash
         run: |
           echo "Waiting for server to launch on port 8080..."
           if ! timeout 60s bash -c 'until curl -s localhost:8080 > /dev/null; do sleep 2; done'; then
