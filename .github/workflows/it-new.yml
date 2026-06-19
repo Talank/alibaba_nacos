@@ -28,6 +28,7 @@ jobs:
         run: mvn clean install -Prelease-nacos -DskipTests=true
 
       - name: Start Server Without Auth
+        shell: bash
         run: |
           echo "Configuring application.properties..."
           PROP_FILE=$(ls distribution/target/nacos-server-*/nacos/conf/application.properties)
@@ -43,9 +44,12 @@ jobs:
           bash distribution/target/nacos-server-*/nacos/bin/startup.sh -m standalone
 
       - name: Wait for Server Startup
+        shell: bash
         run: |
           echo "Waiting for server to launch on port 8080..."
-          if ! timeout 60s bash -c 'until curl -s localhost:8080 > /dev/null; do sleep 2; done'; then
+          WAIT_SECS=0
+          until curl -s localhost:8080 > /dev/null || [ $WAIT_SECS -ge 60 ]; do sleep 2; WAIT_SECS=$((WAIT_SECS+2)); done
+          if ! curl -s localhost:8080 > /dev/null; then
             echo "Server failed to start"
             LOG_DIR=$(ls -d distribution/target/nacos-server-*/nacos/logs 2>/dev/null | head -n 1 || true)
             if [ -n "$LOG_DIR" ]; then
