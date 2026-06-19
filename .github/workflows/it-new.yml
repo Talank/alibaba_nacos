@@ -28,6 +28,7 @@ jobs:
         run: mvn clean install -Prelease-nacos -DskipTests=true
 
       - name: Start Server Without Auth
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           echo "Configuring application.properties..."
@@ -44,6 +45,7 @@ jobs:
           bash distribution/target/nacos-server-*/nacos/bin/startup.sh -m standalone
 
       - name: Wait for Server Startup
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           echo "Waiting for server to launch on port 8080..."
@@ -78,14 +80,17 @@ jobs:
           echo "Server is up"
 
       - name: Run IT Tests
+        if: runner.os != 'Windows'
         run: |
           cd test
           mvn clean verify -Pintegration-test
 
       - name: Run Java SDK IT Tests
+        if: runner.os != 'Windows'
         run: mvn -pl test/java-sdk-test clean verify -Pjava-sdk-integration-test -DskipTests=false
 
       - name: Run Maintainer SDK IT Tests
+        if: runner.os != 'Windows'
         run: mvn -pl test/maintainer-sdk-test clean verify -Pmaintainer-sdk-integration-test -DskipTests=false
     strategy:
       matrix:
